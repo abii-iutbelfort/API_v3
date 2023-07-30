@@ -1,0 +1,35 @@
+{
+  "name": "apiv2abii",
+  "version": "1.0.0",
+  "description": "Backend for the new ABII website",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ABII/API_v2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ABII/API_v2/issues"
+  },
+  "homepage": "https://github.com/ABII/API_v2#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "chalk": "4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-validator": "^6.14.2",
+    "jsonwebtoken": "^9.0.1",
+    "pg": "^8.8.0",
+    "sequelize": "^6.28.0"
+  }
+}
