@@ -1,28 +1,28 @@
-import db from "../models/index.js";
+import db from '../models/index.js';
 const Tags = db.Tags;
-import logger from "../utils/logger.utils.js";
+import logger from '../utils/logger.utils.js';
 
 // Create and Save a new Tag
 async function create(req, res) {
   try {
     const tag = await Tags.findOrCreate({
-      where: { tagLibelle: req.body.tagLibelle },
+      where: {tagLibelle: req.body.tagLibelle},
     });
 
     if (!tag[1]) {
       return res.status(409).send({
-        message: "Ce tag existe déjà.",
+        message: 'Ce tag existe déjà.',
       });
     }
 
     res.status(200).send({
-      message: "Tag créé.",
+      message: 'Tag créé.',
       data: tag[0],
     });
   } catch (error) {
     logger.error(error.message, error);
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
   }
 }
@@ -30,14 +30,14 @@ async function create(req, res) {
 // Retrieve all Tags from the database.
 async function findAll(req, res) {
   try {
-    let tags = await Tags.findAll();
+    const tags = await Tags.findAll();
     res.status(200).send({
-      message: "Tags récupérés.",
+      message: 'Tags récupérés.',
       data: tags,
     });
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }
@@ -46,7 +46,7 @@ async function findAll(req, res) {
 // Update a Tag by the id in the request
 async function update(req, res) {
   const id = req.params.id;
-  const newValue = { tagLibelle: req.body.tagLibelle };
+  const newValue = {tagLibelle: req.body.tagLibelle};
 
   try {
     const updatedTags = await Tags.update(newValue, {
@@ -57,17 +57,17 @@ async function update(req, res) {
 
     if (updatedTags[0] > 0) {
       res.status(200).send({
-        message: "Tag mis à jour.",
+        message: 'Tag mis à jour.',
       });
     } else {
       logger.warn(`Failed tag update with id : ${id}`);
       res.status(404).send({
-        message: "Pas de tag correspondant",
+        message: 'Pas de tag correspondant',
       });
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur",
+      message: 'Le serveur a rencontré une erreur',
     });
     logger.error(error.message, error);
   }
@@ -79,22 +79,22 @@ async function destroy(req, res) {
 
   try {
     const destroydCount = await Tags.destroy({
-      where: { tagId: id },
+      where: {tagId: id},
     });
 
     if (destroydCount === 1) {
       res.status(200).send({
-        message: "Tag a bien été supprimé.",
+        message: 'Tag a bien été supprimé.',
       });
     } else {
       res.status(404).send({
-        message: "Pas de tag correspondant",
+        message: 'Pas de tag correspondant',
       });
       logger.warn(`Failed tag destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }

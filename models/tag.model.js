@@ -1,5 +1,5 @@
 export default (sequelize, DataTypes) => {
-  return sequelize.define("tags", {
+  return sequelize.define('tags', {
     tagId: {
       type: DataTypes.INTEGER,
       primaryKey: true,

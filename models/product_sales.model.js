@@ -1,12 +1,12 @@
 export default (sequelize, DataTypes) => {
-  return sequelize.define("product_sales", {
+  return sequelize.define('product_sales', {
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       foreignKey: true,
       references: {
-        model: "products",
-        key: "productId",
+        model: 'products',
+        key: 'productId',
       },
     },
     transactionId: {
@@ -14,8 +14,8 @@ export default (sequelize, DataTypes) => {
       allowNull: false,
       foreignKey: true,
       references: {
-        model: "transactions",
-        key: "transactionId",
+        model: 'transactions',
+        key: 'transactionId',
       },
     },
     amountSold: {

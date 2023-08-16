@@ -1,12 +1,12 @@
-import config from "../config/auth.config.js";
-import db from "../models/index.js";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
+import config from '../config/auth.config.js';
+import db from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 const AbiiUsers = db.AbiiUsers;
-import logger from "../utils/logger.utils.js";
+import logger from '../utils/logger.utils.js';
 
 async function signup(req, res) {
-  const { login, firstName, lastName, password } = req.body;
+  const {login, firstName, lastName, password} = req.body;
   const userData = {
     firstName,
     lastName,
@@ -14,9 +14,9 @@ async function signup(req, res) {
     password,
   };
   try {
-    const { firstName, lastName, login } = await AbiiUsers.create(userData);
+    const {firstName, lastName, login} = await AbiiUsers.create(userData);
     res.status(200).send({
-      message: "User ABII créé.",
+      message: 'User ABII créé.',
       data: {
         firstName,
         lastName,
@@ -25,7 +25,7 @@ async function signup(req, res) {
     });
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }
@@ -41,27 +41,27 @@ async function signin(req, res) {
 
     if (!user) {
       return res.status(404).send({
-        message: "Pas d'utilisateur ABII correspondant.",
+        message: 'Pas d\'utilisateur ABII correspondant.',
       });
     }
 
     const passwordIsValid = bcrypt.compareSync(
-      req.body.password,
-      user.password
+        req.body.password,
+        user.password,
     );
 
     if (!passwordIsValid) {
       logger.warn(`Failed login attempt for user : ${user.login}`);
       return res.status(401).send({
-        message: "Mot de passe invalide.",
+        message: 'Mot de passe invalide.',
       });
     }
-    const accessToken = jwt.sign({ id: user.userId }, config.secret, {
+    const accessToken = jwt.sign({id: user.userId}, config.secret, {
       expiresIn: 43200, // 12 hours
     });
 
     res.status(200).send({
-      message: "Connexion réussie.",
+      message: 'Connexion réussie.',
       data: {
         userData: {
           firstName: user.firstName,
@@ -72,7 +72,7 @@ async function signin(req, res) {
       },
     });
   } catch (error) {
-    res.status(500).send({ message: "Le serveur a rencontré une erreur." });
+    res.status(500).send({message: 'Le serveur a rencontré une erreur.'});
     logger.error(error.message, error);
   }
 }
@@ -83,21 +83,21 @@ async function destroy(req, res) {
 
   try {
     const destroyCount = await AbiiUsers.destroy({
-      where: { userId: id },
+      where: {userId: id},
     });
     if (destroyCount > 0) {
       res.status(200).send({
-        message: "User was destroyd successfully!",
+        message: 'User was destroyd successfully!',
       });
     } else {
       res.status(404).send({
-        message: "Pas d'utilisateur ABII correspondant.",
+        message: 'Pas d\'utilisateur ABII correspondant.',
       });
       logger.warn(`Failed user destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }

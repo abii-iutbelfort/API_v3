@@ -1,35 +1,35 @@
-import loggers from "./utils/logger.utils.js";
-import fs from "fs";
-import inquirer from "inquirer";
-import bcrypt from "bcrypt";
-import { Sequelize } from "sequelize";
-import { Client } from "pg";
+import loggers from './utils/logger.utils.js';
+import fs from 'fs';
+import inquirer from 'inquirer';
+import bcrypt from 'bcrypt';
+import {Sequelize} from 'sequelize';
+import {Client} from 'pg';
 
 // Function to create the PostgreSQL user and database using the superuser
 async function createPostgresUserAndDatabase(
-  superUser,
-  superPassword,
-  postgresUser,
-  postgresPassword,
-  databaseName
+    superUser,
+    superPassword,
+    postgresUser,
+    postgresPassword,
+    databaseName,
 ) {
   const client = new Client({
     user: superUser,
     password: superPassword,
-    database: "postgres",
+    database: 'postgres',
   });
 
   try {
     await client.connect();
     await client.query(
-      `CREATE USER ${postgresUser} WITH PASSWORD '${postgresPassword}'`
+        `CREATE USER ${postgresUser} WITH PASSWORD '${postgresPassword}'`,
     );
     await client.query(`CREATE DATABASE ${databaseName} OWNER ${postgresUser}`);
     await client.end();
 
-    console.log("PostgreSQL user and database created successfully.");
+    console.log('PostgreSQL user and database created successfully.');
   } catch (error) {
-    console.error("Error creating PostgreSQL user and database:", error);
+    console.error('Error creating PostgreSQL user and database:', error);
     process.exit(1);
   }
 }
@@ -39,47 +39,47 @@ async function promptPostgresInfo() {
   try {
     const answers = await inquirer.prompt([
       {
-        type: "input",
-        name: "superUser",
+        type: 'input',
+        name: 'superUser',
         message: 'Enter the PostgreSQL superuser username (e.g., "postgres"):',
       },
       {
-        type: "password",
-        name: "superPassword",
-        message: "Enter the PostgreSQL superuser password:",
-        mask: "*",
+        type: 'password',
+        name: 'superPassword',
+        message: 'Enter the PostgreSQL superuser password:',
+        mask: '*',
       },
       {
-        type: "input",
-        name: "postgresUser",
-        message: "Enter the PostgreSQL username for the new user:",
+        type: 'input',
+        name: 'postgresUser',
+        message: 'Enter the PostgreSQL username for the new user:',
       },
       {
-        type: "password",
-        name: "postgresPassword",
-        message: "Enter the PostgreSQL password for the new user:",
-        mask: "*",
+        type: 'password',
+        name: 'postgresPassword',
+        message: 'Enter the PostgreSQL password for the new user:',
+        mask: '*',
       },
       {
-        type: "input",
-        name: "databaseName",
-        message: "Enter the name of the database:",
+        type: 'input',
+        name: 'databaseName',
+        message: 'Enter the name of the database:',
       },
     ]);
 
     // Create the PostgreSQL user and database
     await createPostgresUserAndDatabase(
-      answers.superUser,
-      answers.superPassword,
-      answers.postgresUser,
-      answers.postgresPassword,
-      answers.databaseName
+        answers.superUser,
+        answers.superPassword,
+        answers.postgresUser,
+        answers.postgresPassword,
+        answers.databaseName,
     );
 
-    console.log("PostgreSQL user and database created successfully.");
+    console.log('PostgreSQL user and database created successfully.');
     return answers;
   } catch (error) {
-    console.error("Error creating PostgreSQL user and database:", error);
+    console.error('Error creating PostgreSQL user and database:', error);
     process.exit(1);
   }
 }
@@ -96,16 +96,16 @@ async function runSetup() {
     // Update .env file with database configurations
     const envFileContent = `
       DATABASE_URL=postgres://${postgresInfo.postgresUser}:${encodeURIComponent(
-      postgresInfo.postgresPassword
-    )}@localhost/${postgresInfo.databaseName}
+    postgresInfo.postgresPassword,
+)}@localhost/${postgresInfo.databaseName}
       # Add other environment variables if needed
     `;
-    fs.writeFileSync(".env", envFileContent);
+    fs.writeFileSync('.env', envFileContent);
 
-    console.log("Setup completed successfully.");
+    console.log('Setup completed successfully.');
     process.exit(0);
   } catch (error) {
-    console.error("Setup failed:", error);
+    console.error('Setup failed:', error);
     process.exit(1);
   }
 }

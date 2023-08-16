@@ -1,6 +1,6 @@
 // REVIEW : A voir si on garde ce model ou si on le supprime
 export default (sequelize, DataTypes) => {
-  return sequelize.define("permissions", {
+  return sequelize.define('permissions', {
     permId: {
       type: DataTypes.INTEGER,
       primaryKey: true,

@@ -1,21 +1,21 @@
-import jwt from "jsonwebtoken";
-import config from "../config/auth.config.js";
-import db from "../models/index.js";
+import jwt from 'jsonwebtoken';
+import config from '../config/auth.config.js';
+import db from '../models/index.js';
 const AbiiUsers = db.abiiUsers;
 
 export async function verifyToken(req, res, next) {
-  let token = req.headers["x-access-token"];
+  const token = req.headers['x-access-token'];
 
   if (!token) {
     return res.status(403).send({
-      message: "No token provided!",
+      message: 'No token provided!',
     });
   }
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
       return res.status(401).send({
-        message: "Unauthorized!",
+        message: 'Unauthorized!',
       });
     }
     req.userId = decoded.id;
@@ -34,14 +34,14 @@ export async function checkDuplicateUsernameOrEmail(req, res, next) {
 
     if (user) {
       return res.status(400).send({
-        message: "Failed! Username is already in use!",
+        message: 'Failed! Username is already in use!',
       });
     }
 
     next();
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
     return;

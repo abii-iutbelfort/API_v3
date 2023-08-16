@@ -1,5 +1,5 @@
 export default (sequelize, DataTypes) => {
-  return sequelize.define("memberships", {
+  return sequelize.define('memberships', {
     membershipId: {
       type: DataTypes.INTEGER,
       primaryKey: true,

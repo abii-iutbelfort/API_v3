@@ -1,5 +1,5 @@
 export default (sequelize, DataTypes) => {
-  return sequelize.define("transactions", {
+  return sequelize.define('transactions', {
     transactionId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -19,9 +19,9 @@ export default (sequelize, DataTypes) => {
       },
     },
     transactionStatus: {
-      type: DataTypes.ENUM("paid", "cancelled", "pending"),
+      type: DataTypes.ENUM('paid', 'cancelled', 'pending'),
       allowNull: false,
-      defaultValue: "pending",
+      defaultValue: 'pending',
     },
   });
 };
