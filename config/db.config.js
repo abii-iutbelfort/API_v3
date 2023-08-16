@@ -1,6 +1,8 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 
-module.exports = {
+dotenv.config();
+
+export default {
   HOST: process.env._ABII_API_HOST,
   USER: process.env._ABII_API_USER,
   PASSWORD: process.env._ABII_API_MDP,

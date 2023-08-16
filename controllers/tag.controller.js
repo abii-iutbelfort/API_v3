@@ -1,9 +1,9 @@
-const db = require("../models");
+import db from "../models/index.js";
 const Tags = db.Tags;
-const logger = require("../utils/logger.utils");
+import logger from "../utils/logger.utils.js";
 
 // Create and Save a new Tag
-exports.create = async (req, res) => {
+async function create(req, res) {
   try {
     const tag = await Tags.findOrCreate({
       where: { tagLibelle: req.body.tagLibelle },
@@ -25,10 +25,10 @@ exports.create = async (req, res) => {
       message: "Le serveur a rencontré une erreur.",
     });
   }
-};
+}
 
 // Retrieve all Tags from the database.
-exports.findAll = async (req, res) => {
+async function findAll(req, res) {
   try {
     let tags = await Tags.findAll();
     res.status(200).send({
@@ -41,10 +41,10 @@ exports.findAll = async (req, res) => {
     });
     logger.error(error.message, error);
   }
-};
+}
 
 // Update a Tag by the id in the request
-exports.update = async (req, res) => {
+async function update(req, res) {
   const id = req.params.id;
   const newValue = { tagLibelle: req.body.tagLibelle };
 
@@ -71,18 +71,18 @@ exports.update = async (req, res) => {
     });
     logger.error(error.message, error);
   }
-};
+}
 
-// Delete a Tag with the specified id in the request
-exports.delete = async (req, res) => {
+// Destroy a Tag with the specified id in the request
+async function destroy(req, res) {
   const id = req.params.id;
 
   try {
-    const deletedCount = await Tags.destroy({
+    const destroydCount = await Tags.destroy({
       where: { tagId: id },
     });
 
-    if (deletedCount === 1) {
+    if (destroydCount === 1) {
       res.status(200).send({
         message: "Tag a bien été supprimé.",
       });
@@ -90,7 +90,7 @@ exports.delete = async (req, res) => {
       res.status(404).send({
         message: "Pas de tag correspondant",
       });
-      logger.warn(`Failed tag delete with id : ${id}`);
+      logger.warn(`Failed tag destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
@@ -98,4 +98,11 @@ exports.delete = async (req, res) => {
     });
     logger.error(error.message, error);
   }
+}
+
+export default {
+  create,
+  findAll,
+  update,
+  destroy,
 };

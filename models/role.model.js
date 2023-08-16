@@ -1,6 +1,6 @@
 // REVIEW : A voir si on garde ce model ou si on le supprime
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define("roles", {
     roleId: {
       type: DataTypes.INTEGER,

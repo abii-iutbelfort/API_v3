@@ -1,3 +1,6 @@
-module.exports = {
-  secret: "Peut-être que la version n°7598 sera bien ? 🤔", // TODO - add a secret key here
+import dotenv from "dotenv";
+dotenv.config();
+
+export default {
+  secret: process.env._ABII_APP_SECRET,
 };

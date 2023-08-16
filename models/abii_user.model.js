@@ -1,7 +1,7 @@
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define(
     "abii_users",
     {
@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      firstName: {
+      firstname: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      lastName: {
+      lastname: {
         type: DataTypes.STRING,
         allowNull: false,
       },

@@ -1,19 +1,23 @@
-const auth = require("../middleware/authJwt");
-const controller = require("../controllers/product.controller.js");
-const router = require("express").Router();
+import {
+  verifyToken,
+  checkDuplicateUsernameOrEmail,
+} from "../middleware/auth.middleware.js";
+import controller from "../controllers/product.controller.js";
+import express from "express";
+const router = express.Router();
 
-module.exports = (app) => {
+export default (app) => {
   // Create a new Product
-  router.post("/", [auth.verifyToken], controller.create);
+  router.post("/", [verifyToken], controller.create);
 
   // Retrieve all Products
   router.get("/", controller.findAll);
 
   // Update a Product with id
-  router.put("/:id", [auth.verifyToken], controller.update);
+  router.put("/:id", [verifyToken], controller.update);
 
-  // Delete a Product with id
-  router.delete("/:id", [auth.verifyToken], controller.delete);
+  // Destroy a Product with id
+  router.delete("/:id", [verifyToken], controller.destroy);
 
   app.use("/products", router);
 };

@@ -1,4 +1,4 @@
-const chalk = require("chalk");
+import chalk from "chalk";
 
 function info(message) {
   console.log(chalk`{blue.bold [INFO]}\t\t${message}`);
@@ -20,4 +20,4 @@ function success(message) {
   console.log(chalk`{green.bold [SUCCESS]}\t${message}`);
 }
 
-module.exports = { info, error, warn, success };
+export default { info, error, warn, success };

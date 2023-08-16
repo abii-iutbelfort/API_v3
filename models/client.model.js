@@ -1,6 +1,4 @@
-const { DataTypes } = require("sequelize");
-
-module.exports = (sequelize) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define(
     "clients",
     {
@@ -21,6 +19,10 @@ module.exports = (sequelize) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
         defaultValue: 0,
+      },
+      clientMembership: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
     },
     {

@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define("tags", {
     tagId: {
       type: DataTypes.INTEGER,
@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     tagLibelle: {
+      // TODO: add case insensitive unique constraint
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,

@@ -1,9 +1,11 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import createRouterFunctions from "./routers/index.js";
 
 const app = express();
-const logger = require("./utils/logger.utils");
-const path = require("path");
+import logger from "./utils/logger.utils.js";
+import path from "path";
 
 var corsOptions = {
   // origin: "http://localhost:8081",
@@ -11,9 +13,7 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-require("dotenv").config({
-  path: path.resolve(__dirname, "./.env"),
-});
+dotenv.config();
 
 const PORT = process.env._ABII_API_PORT;
 const HOST = process.env._ABII_API_HOST;
@@ -29,13 +29,11 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 // Use routes defined in backend/routers
-for (const file of require("fs").readdirSync("./routers")) {
-  if (file.endsWith(".router.js")) {
-    require(`./routers/${file}`)(app);
-  }
+for (const createRouter of createRouterFunctions) {
+  createRouter(app);
 }
 
-const db = require("./models");
+import db from "./models/index.js";
 
 logger.info("Connecting to database...");
 db.sequelize

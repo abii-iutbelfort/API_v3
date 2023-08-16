@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "apiv2abii",
   "version": "1.0.0",
   "description": "Backend for the new ABII website",
@@ -6,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "create_user": "node scripts/create_user.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,7 @@
   },
   "homepage": "https://github.com/ABII/API_v2#readme",
   "devDependencies": {
+    "inquirer": "^9.2.9",
     "nodemon": "^2.0.20"
   },
   "dependencies": {

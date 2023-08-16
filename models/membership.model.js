@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define("memberships", {
     membershipId: {
       type: DataTypes.INTEGER,
@@ -19,6 +19,13 @@ module.exports = (sequelize, DataTypes) => {
         min: 0.01,
       },
     },
-    // REVIEW - stocker la durée en mois ici ?
+    membershipDuration: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 6,
+      validate: {
+        min: 1,
+      },
+    },
   });
 };

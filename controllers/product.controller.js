@@ -1,16 +1,11 @@
-const db = require("../models");
+import db from "../models/index.js";
 const Products = db.Products;
-const logger = require("../utils/logger.utils");
+import logger from "../utils/logger.utils.js";
 
 // Create and Save a new Product
-exports.create = async (req, res) => {
+async function create(req, res) {
   const { productLibelle, productPrice, productStock, productTags } = req.body;
-
-  const newProduct = {
-    productLibelle,
-    productPrice,
-    productStock,
-  };
+  const transaction = await db.sequelize.transaction();
 
   try {
     let product = await Products.findOne({
@@ -22,25 +17,41 @@ exports.create = async (req, res) => {
         message: "Ce produit existe déjà.",
       });
     }
-    product = await Products.create(newProduct);
+
+    const newProduct = {
+      productLibelle,
+      productPrice,
+      productStock,
+    };
+
+    product = await Products.create(newProduct, { transaction });
+
+    if (productPrice) {
+      await product.update({ productPrice }, { transaction });
+    }
+    if (productStock) {
+      await product.update({ productStock }, { transaction });
+    }
     if (productTags) {
-      await product.setTags(productTags);
+      await product.setTags(productTags, { transaction });
     }
 
+    await transaction.commit();
     res.status(200).send({
       message: "Product créé.",
       data: product,
     });
   } catch (error) {
+    await transaction.rollback();
     logger.error(error.message, error);
     res.status(500).send({
       message: "Le serveur a rencontré une erreur.",
     });
   }
-};
+}
 
 // Retrieve all Products from the database.
-exports.findAll = async (req, res) => {
+async function findAll(req, res) {
   try {
     let products = await Products.findAll({
       include: {
@@ -61,10 +72,10 @@ exports.findAll = async (req, res) => {
     });
     logger.error(error.message, error);
   }
-};
+}
 
 // Update a Product by the id in the request
-exports.update = async (req, res) => {
+async function update(req, res) {
   const id = req.params.id;
 
   const { productLibelle, productPrice, productStock, productTags } = req.body;
@@ -87,7 +98,7 @@ exports.update = async (req, res) => {
     if (updatedProducts[0] > 0) {
       res.status(200).send({
         message: "Produit mis à jour.",
-        data: updatedProducts,
+        data: updatedProducts[1],
       });
     } else {
       logger.warn(`Failed product update with id : ${id}`);
@@ -101,18 +112,18 @@ exports.update = async (req, res) => {
     });
     logger.error(error.message, error);
   }
-};
+}
 
-// Delete a Product with the specified id in the request
-exports.delete = async (req, res) => {
+// Destroy a Product with the specified id in the request
+async function destroy(req, res) {
   const id = req.params.id;
 
   try {
-    const deletedCount = await Products.destroy({
+    const destroydCount = await Products.destroy({
       where: { productId: id },
     });
 
-    if (deletedCount === 1) {
+    if (destroydCount === 1) {
       res.status(200).send({
         message: "Produits a bien été supprimé.",
       });
@@ -120,7 +131,7 @@ exports.delete = async (req, res) => {
       res.status(404).send({
         message: "Pas de produits correspondant",
       });
-      logger.warn(`Failed product delete with id : ${id}`);
+      logger.warn(`Failed product destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
@@ -128,4 +139,11 @@ exports.delete = async (req, res) => {
     });
     logger.error(error.message, error);
   }
+}
+
+export default {
+  create,
+  findAll,
+  update,
+  destroy,
 };

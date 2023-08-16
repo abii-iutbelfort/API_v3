@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define("transactions", {
     transactionId: {
       type: DataTypes.INTEGER,
@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         min: 0.01,
       },
+    },
+    transactionStatus: {
+      type: DataTypes.ENUM("paid", "cancelled", "pending"),
+      allowNull: false,
+      defaultValue: "pending",
     },
   });
 };

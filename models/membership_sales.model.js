@@ -1,6 +1,6 @@
 // TODO - A supprimer si la date de fin n'est pas stockée ici ET si on ne met pas de hook pour mettre une date de fin de membership sur l'utilisateur
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   return sequelize.define("memberships_sales", {
     membershipId: {
       type: DataTypes.INTEGER,
@@ -20,9 +20,5 @@ module.exports = (sequelize, DataTypes) => {
         key: "transactionId",
       },
     },
-    // endDate: {
-    //   type: DataTypes.DATE,
-    //   allowNull: false,
-    // },
   });
 };

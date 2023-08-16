@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken");
-const config = require("../config/auth.config.js");
-const db = require("../models/index.js");
-const User = db.users;
+import jwt from "jsonwebtoken";
+import config from "../config/auth.config.js";
+import db from "../models/index.js";
+const AbiiUsers = db.abiiUsers;
 
-verifyToken = (req, res, next) => {
+export async function verifyToken(req, res, next) {
   let token = req.headers["x-access-token"];
 
   if (!token) {
@@ -21,7 +21,32 @@ verifyToken = (req, res, next) => {
     req.userId = decoded.id;
     next();
   });
-};
+}
+
+export async function checkDuplicateUsernameOrEmail(req, res, next) {
+  try {
+    // Username
+    const user = await AbiiUsers.findOne({
+      where: {
+        login: req.body.login,
+      },
+    });
+
+    if (user) {
+      return res.status(400).send({
+        message: "Failed! Username is already in use!",
+      });
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).send({
+      message: "Le serveur a rencontré une erreur.",
+    });
+    logger.error(error.message, error);
+    return;
+  }
+}
 
 // isAdmin = (req, res, next) => {
 //   User.findByPk(req.userId).then((user) => {
@@ -73,11 +98,3 @@ verifyToken = (req, res, next) => {
 //     });
 //   });
 // };
-
-const authJwt = {
-  verifyToken,
-  //   isAdmin,
-  //   isModerator,
-  //   isModeratorOrAdmin,
-};
-module.exports = authJwt;

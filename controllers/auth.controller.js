@@ -1,11 +1,11 @@
-const config = require("../config/auth.config");
-const db = require("../models");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+import config from "../config/auth.config.js";
+import db from "../models/index.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 const AbiiUsers = db.AbiiUsers;
-const logger = require("../utils/logger.utils");
+import logger from "../utils/logger.utils.js";
 
-exports.signup = async (req, res) => {
+async function signup(req, res) {
   const { login, firstName, lastName, password } = req.body;
   const userData = {
     firstName,
@@ -29,9 +29,9 @@ exports.signup = async (req, res) => {
     });
     logger.error(error.message, error);
   }
-};
+}
 
-exports.signin = async (req, res) => {
+async function signin(req, res) {
   try {
     const user = await AbiiUsers.findOne({
       where: {
@@ -75,25 +75,25 @@ exports.signin = async (req, res) => {
     res.status(500).send({ message: "Le serveur a rencontré une erreur." });
     logger.error(error.message, error);
   }
-};
+}
 
-// Delete a User with the specified id in the request
-exports.delete = async (req, res) => {
+// Destroy a User with the specified id in the request
+async function destroy(req, res) {
   const id = req.params.id;
 
   try {
-    const deleteCount = await AbiiUsers.destroy({
+    const destroyCount = await AbiiUsers.destroy({
       where: { userId: id },
     });
-    if (deleteCount > 0) {
+    if (destroyCount > 0) {
       res.status(200).send({
-        message: "User was deleted successfully!",
+        message: "User was destroyd successfully!",
       });
     } else {
       res.status(404).send({
         message: "Pas d'utilisateur ABII correspondant.",
       });
-      logger.warn(`Failed user delete with id : ${id}`);
+      logger.warn(`Failed user destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
@@ -101,4 +101,10 @@ exports.delete = async (req, res) => {
     });
     logger.error(error.message, error);
   }
+}
+
+export default {
+  signup,
+  signin,
+  destroy,
 };
