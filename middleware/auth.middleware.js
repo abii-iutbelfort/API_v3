@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import config from '../config/auth.config.js';
-import db from '../models/index.js';
-const AbiiUsers = db.abiiUsers;
+import { AbiiUsers } from '../models/index.js';
+import logger from '../utils/logger.utils.js';
 
 export async function verifyToken(req, res, next) {
   const token = req.headers['x-access-token'];

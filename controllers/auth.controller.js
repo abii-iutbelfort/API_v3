@@ -1,25 +1,25 @@
 import config from '../config/auth.config.js';
-import db from '../models/index.js';
+import { AbiiUsers } from '../models/index.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-const AbiiUsers = db.AbiiUsers;
 import logger from '../utils/logger.utils.js';
 
 async function signup(req, res) {
-  const {login, firstName, lastName, password} = req.body;
+  const { login, firstname, lastname, password } = req.body;
   const userData = {
-    firstName,
-    lastName,
+    firstname,
+    lastname,
     login,
     password,
   };
+  console.log(userData);
   try {
-    const {firstName, lastName, login} = await AbiiUsers.create(userData);
+    const { firstname, lastname, login } = await AbiiUsers.create(userData);
     res.status(200).send({
       message: 'User ABII créé.',
       data: {
-        firstName,
-        lastName,
+        firstname,
+        lastname,
         login,
       },
     });
@@ -46,8 +46,8 @@ async function signin(req, res) {
     }
 
     const passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password,
+      req.body.password,
+      user.password,
     );
 
     if (!passwordIsValid) {
@@ -56,7 +56,7 @@ async function signin(req, res) {
         message: 'Mot de passe invalide.',
       });
     }
-    const accessToken = jwt.sign({id: user.userId}, config.secret, {
+    const accessToken = jwt.sign({ id: user.userId }, config.secret, {
       expiresIn: 43200, // 12 hours
     });
 
@@ -64,15 +64,15 @@ async function signin(req, res) {
       message: 'Connexion réussie.',
       data: {
         userData: {
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstname: user.firstname,
+          lastname: user.lastname,
           login: user.login,
         },
         accessToken,
       },
     });
   } catch (error) {
-    res.status(500).send({message: 'Le serveur a rencontré une erreur.'});
+    res.status(500).send({ message: 'Le serveur a rencontré une erreur. 222' });
     logger.error(error.message, error);
   }
 }
@@ -83,7 +83,7 @@ async function destroy(req, res) {
 
   try {
     const destroyCount = await AbiiUsers.destroy({
-      where: {userId: id},
+      where: { userId: id },
     });
     if (destroyCount > 0) {
       res.status(200).send({
@@ -97,7 +97,7 @@ async function destroy(req, res) {
     }
   } catch (error) {
     res.status(500).send({
-      message: 'Le serveur a rencontré une erreur.',
+      message: 'Le serveur a rencontré une erreur.333',
     });
     logger.error(error.message, error);
   }

@@ -1,25 +1,25 @@
-import {Sequelize, DataTypes} from 'sequelize';
+import { Sequelize, DataTypes } from 'sequelize';
 
 import dbConfig from '../config/db.config.js';
 
 export const sequelize = new Sequelize(
-    dbConfig.DB,
-    dbConfig.USER,
-    dbConfig.PASSWORD,
-    {
-      host: dbConfig.HOST,
-      dialect: dbConfig.dialect,
-      define: {
-        timestamps: false,
-      },
-      pool: {
-        max: dbConfig.pool.max,
-        min: dbConfig.pool.min,
-        acquire: dbConfig.pool.acquire,
-        idle: dbConfig.pool.idle,
-      },
-      freezeTableName: true,
+  dbConfig.DB,
+  dbConfig.USER,
+  dbConfig.PASSWORD,
+  {
+    host: dbConfig.HOST,
+    dialect: dbConfig.dialect,
+    define: {
+      timestamps: false,
     },
+    pool: {
+      max: dbConfig.pool.max,
+      min: dbConfig.pool.min,
+      acquire: dbConfig.pool.acquire,
+      idle: dbConfig.pool.idle,
+    },
+    freezeTableName: true,
+  },
 );
 
 import createTagModel from './tag.model.js';
@@ -39,6 +39,18 @@ export const ProductSales = createProductSalesModel(sequelize, DataTypes);
 export const Products = createProductModel(sequelize, DataTypes);
 export const Memberships = createMembershipModel(sequelize, DataTypes);
 export const MembershipSales = createMembershipSalesModel(sequelize, DataTypes);
+
+export const db = {
+  sequelize,
+  Tags,
+  Clients,
+  AbiiUsers,
+  Transactions,
+  ProductSales,
+  Products,
+  Memberships,
+  MembershipSales,
+};
 
 // Product <-> Tag
 Products.belongsToMany(Tags, {
@@ -86,14 +98,4 @@ Memberships.belongsToMany(Transactions, {
   foreignKey: 'membershipId',
 });
 
-export default {
-  sequelize,
-  Tags,
-  Clients,
-  AbiiUsers,
-  Transactions,
-  ProductSales,
-  Products,
-  Memberships,
-  MembershipSales,
-};
+export default db;

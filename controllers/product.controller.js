@@ -4,12 +4,12 @@ import logger from '../utils/logger.utils.js';
 
 // Create and Save a new Product
 async function create(req, res) {
-  const {productLibelle, productPrice, productStock, productTags} = req.body;
+  const { productLibelle, productNormalPrice, productStock, productTags } = req.body;
   const transaction = await db.sequelize.transaction();
 
   try {
     let product = await Products.findOne({
-      where: {productLibelle},
+      where: { productLibelle },
     });
 
     if (product) {
@@ -20,20 +20,20 @@ async function create(req, res) {
 
     const newProduct = {
       productLibelle,
-      productPrice,
+      productNormalPrice,
       productStock,
     };
 
-    product = await Products.create(newProduct, {transaction});
+    product = await Products.create(newProduct, { transaction });
 
-    if (productPrice) {
-      await product.update({productPrice}, {transaction});
+    if (productNormalPrice) {
+      await product.update({ productNormalPrice }, { transaction });
     }
     if (productStock) {
-      await product.update({productStock}, {transaction});
+      await product.update({ productStock }, { transaction });
     }
     if (productTags) {
-      await product.setTags(productTags, {transaction});
+      await product.setTags(productTags, { transaction });
     }
 
     await transaction.commit();
@@ -78,11 +78,11 @@ async function findAll(req, res) {
 async function update(req, res) {
   const id = req.params.id;
 
-  const {productLibelle, productPrice, productStock, productTags} = req.body;
+  const { productLibelle, productNormalPrice, productStock, productTags } = req.body;
 
   const newValue = {
     productLibelle,
-    productPrice,
+    productNormalPrice,
     productStock,
     productTags,
   };
@@ -120,7 +120,7 @@ async function destroy(req, res) {
 
   try {
     const destroydCount = await Products.destroy({
-      where: {productId: id},
+      where: { productId: id },
     });
 
     if (destroydCount === 1) {
