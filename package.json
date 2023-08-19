@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "apiv2abii",
   "version": "1.0.0",
   "description": "Backend for the new ABII website",
@@ -6,19 +7,20 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint --fix .",
+    "create_user": "node scripts/create_user.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ABII/API_v2.git"
-  },
-  "author": "",
+  "repository": "git+https://github.com/ABII/API_v2.git",
+  "author": "ArnaudCHEVALME <arnaud.chevalme@proton.me>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ABII/API_v2/issues"
   },
   "homepage": "https://github.com/ABII/API_v2#readme",
   "devDependencies": {
+    "eslint": ">=5.16.0",
+    "eslint-config-google": "^0.14.0",
     "nodemon": "^2.0.20"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-validator": "^6.14.2",
+    "inquirer": "^9.2.9",
     "jsonwebtoken": "^9.0.1",
     "pg": "^8.8.0",
     "sequelize": "^6.28.0"

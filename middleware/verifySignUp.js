@@ -1,6 +1,6 @@
-const db = require("../models");
+import db from '../models/index.js';
 const AbiiUsers = db.AbiiUsers;
-logger = require("../utils/logger.utils");
+import logger from '../utils/logger.utils.js';
 
 checkDuplicateUsernameOrEmail = async (req, res, next) => {
   try {
@@ -13,14 +13,14 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
 
     if (user) {
       return res.status(400).send({
-        message: "Failed! Username is already in use!",
+        message: 'Failed! Username is already in use!',
       });
     }
 
     next();
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
     return;
@@ -46,4 +46,4 @@ const verifySignUp = {
   //   checkRolesExisted: checkRolesExisted,
 };
 
-module.exports = verifySignUp;
+export default verifySignUp;

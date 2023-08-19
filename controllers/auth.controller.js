@@ -1,37 +1,37 @@
-const config = require("../config/auth.config");
-const db = require("../models");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const AbiiUsers = db.AbiiUsers;
-const logger = require("../utils/logger.utils");
+import config from '../config/auth.config.js';
+import { AbiiUsers } from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import logger from '../utils/logger.utils.js';
 
-exports.signup = async (req, res) => {
-  const { login, firstName, lastName, password } = req.body;
+async function signup(req, res) {
+  const { login, firstname, lastname, password } = req.body;
   const userData = {
-    firstName,
-    lastName,
+    firstname,
+    lastname,
     login,
     password,
   };
+  console.log(userData);
   try {
-    const { firstName, lastName, login } = await AbiiUsers.create(userData);
+    const { firstname, lastname, login } = await AbiiUsers.create(userData);
     res.status(200).send({
-      message: "User ABII créé.",
+      message: 'User ABII créé.',
       data: {
-        firstName,
-        lastName,
+        firstname,
+        lastname,
         login,
       },
     });
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }
-};
+}
 
-exports.signin = async (req, res) => {
+async function signin(req, res) {
   try {
     const user = await AbiiUsers.findOne({
       where: {
@@ -41,19 +41,19 @@ exports.signin = async (req, res) => {
 
     if (!user) {
       return res.status(404).send({
-        message: "Pas d'utilisateur ABII correspondant.",
+        message: 'Pas d\'utilisateur ABII correspondant.',
       });
     }
 
     const passwordIsValid = bcrypt.compareSync(
       req.body.password,
-      user.password
+      user.password,
     );
 
     if (!passwordIsValid) {
       logger.warn(`Failed login attempt for user : ${user.login}`);
       return res.status(401).send({
-        message: "Mot de passe invalide.",
+        message: 'Mot de passe invalide.',
       });
     }
     const accessToken = jwt.sign({ id: user.userId }, config.secret, {
@@ -61,44 +61,50 @@ exports.signin = async (req, res) => {
     });
 
     res.status(200).send({
-      message: "Connexion réussie.",
+      message: 'Connexion réussie.',
       data: {
         userData: {
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstname: user.firstname,
+          lastname: user.lastname,
           login: user.login,
         },
         accessToken,
       },
     });
   } catch (error) {
-    res.status(500).send({ message: "Le serveur a rencontré une erreur." });
+    res.status(500).send({ message: 'Le serveur a rencontré une erreur. 222' });
     logger.error(error.message, error);
   }
-};
+}
 
-// Delete a User with the specified id in the request
-exports.delete = async (req, res) => {
+// Destroy a User with the specified id in the request
+async function destroy(req, res) {
   const id = req.params.id;
 
   try {
-    const deleteCount = await AbiiUsers.destroy({
+    const destroyCount = await AbiiUsers.destroy({
       where: { userId: id },
     });
-    if (deleteCount > 0) {
+    if (destroyCount > 0) {
       res.status(200).send({
-        message: "User was deleted successfully!",
+        message: 'User was destroyd successfully!',
       });
     } else {
       res.status(404).send({
-        message: "Pas d'utilisateur ABII correspondant.",
+        message: 'Pas d\'utilisateur ABII correspondant.',
       });
-      logger.warn(`Failed user delete with id : ${id}`);
+      logger.warn(`Failed user destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.333',
     });
     logger.error(error.message, error);
   }
+}
+
+export default {
+  signup,
+  signin,
+  destroy,
 };

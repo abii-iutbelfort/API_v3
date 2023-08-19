@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  return sequelize.define("tags", {
+export default (sequelize, DataTypes) => {
+  return sequelize.define('tags', {
     tagId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     tagLibelle: {
+      // TODO: add case insensitive unique constraint
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,

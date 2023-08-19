@@ -1,16 +1,11 @@
-const db = require("../models");
+import db from '../models/index.js';
 const Products = db.Products;
-const logger = require("../utils/logger.utils");
+import logger from '../utils/logger.utils.js';
 
 // Create and Save a new Product
-exports.create = async (req, res) => {
-  const { productLibelle, productPrice, productStock, productTags } = req.body;
-
-  const newProduct = {
-    productLibelle,
-    productPrice,
-    productStock,
-  };
+async function create(req, res) {
+  const { productLibelle, productNormalPrice, productStock, productTags } = req.body;
+  const transaction = await db.sequelize.transaction();
 
   try {
     let product = await Products.findOne({
@@ -19,59 +14,75 @@ exports.create = async (req, res) => {
 
     if (product) {
       return res.status(409).send({
-        message: "Ce produit existe déjà.",
+        message: 'Ce produit existe déjà.',
       });
     }
-    product = await Products.create(newProduct);
+
+    const newProduct = {
+      productLibelle,
+      productNormalPrice,
+      productStock,
+    };
+
+    product = await Products.create(newProduct, { transaction });
+
+    if (productNormalPrice) {
+      await product.update({ productNormalPrice }, { transaction });
+    }
+    if (productStock) {
+      await product.update({ productStock }, { transaction });
+    }
     if (productTags) {
-      await product.setTags(productTags);
+      await product.setTags(productTags, { transaction });
     }
 
+    await transaction.commit();
     res.status(200).send({
-      message: "Product créé.",
+      message: 'Product créé.',
       data: product,
     });
   } catch (error) {
+    await transaction.rollback();
     logger.error(error.message, error);
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
   }
-};
+}
 
 // Retrieve all Products from the database.
-exports.findAll = async (req, res) => {
+async function findAll(req, res) {
   try {
-    let products = await Products.findAll({
+    const products = await Products.findAll({
       include: {
         model: db.Tags,
-        attributes: ["tagId", "tagLibelle"],
+        attributes: ['tagId', 'tagLibelle'],
         through: {
           attributes: [],
         },
       },
     });
     res.status(200).send({
-      message: "Produits récupérés.",
+      message: 'Produits récupérés.',
       data: products,
     });
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }
-};
+}
 
 // Update a Product by the id in the request
-exports.update = async (req, res) => {
+async function update(req, res) {
   const id = req.params.id;
 
-  const { productLibelle, productPrice, productStock, productTags } = req.body;
+  const { productLibelle, productNormalPrice, productStock, productTags } = req.body;
 
   const newValue = {
     productLibelle,
-    productPrice,
+    productNormalPrice,
     productStock,
     productTags,
   };
@@ -86,46 +97,53 @@ exports.update = async (req, res) => {
 
     if (updatedProducts[0] > 0) {
       res.status(200).send({
-        message: "Produit mis à jour.",
-        data: updatedProducts,
+        message: 'Produit mis à jour.',
+        data: updatedProducts[1],
       });
     } else {
       logger.warn(`Failed product update with id : ${id}`);
       res.status(404).send({
-        message: "Pas de product correspondant",
+        message: 'Pas de product correspondant',
       });
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur",
+      message: 'Le serveur a rencontré une erreur',
     });
     logger.error(error.message, error);
   }
-};
+}
 
-// Delete a Product with the specified id in the request
-exports.delete = async (req, res) => {
+// Destroy a Product with the specified id in the request
+async function destroy(req, res) {
   const id = req.params.id;
 
   try {
-    const deletedCount = await Products.destroy({
+    const destroydCount = await Products.destroy({
       where: { productId: id },
     });
 
-    if (deletedCount === 1) {
+    if (destroydCount === 1) {
       res.status(200).send({
-        message: "Produits a bien été supprimé.",
+        message: 'Produits a bien été supprimé.',
       });
     } else {
       res.status(404).send({
-        message: "Pas de produits correspondant",
+        message: 'Pas de produits correspondant',
       });
-      logger.warn(`Failed product delete with id : ${id}`);
+      logger.warn(`Failed product destroy with id : ${id}`);
     }
   } catch (error) {
     res.status(500).send({
-      message: "Le serveur a rencontré une erreur.",
+      message: 'Le serveur a rencontré une erreur.',
     });
     logger.error(error.message, error);
   }
+}
+
+export default {
+  create,
+  findAll,
+  update,
+  destroy,
 };

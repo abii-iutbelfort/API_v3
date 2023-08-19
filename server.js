@@ -1,25 +1,25 @@
-const express = require("express");
-const cors = require("cors");
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import createRouterFunctions from './routers/index.js';
 
 const app = express();
-const logger = require("./utils/logger.utils");
-const path = require("path");
+import logger from './utils/logger.utils.js';
+import path from 'path';
 
-var corsOptions = {
+const corsOptions = {
   // origin: "http://localhost:8081",
 };
 
 app.use(cors(corsOptions));
 
-require("dotenv").config({
-  path: path.resolve(__dirname, "./.env"),
-});
+dotenv.config();
 
 const PORT = process.env._ABII_API_PORT;
 const HOST = process.env._ABII_API_HOST;
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 // app.use(function (req, res, next) {
 //   res.header(
 //     "Access-Control-Allow-Headers",
@@ -29,23 +29,21 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 // Use routes defined in backend/routers
-for (const file of require("fs").readdirSync("./routers")) {
-  if (file.endsWith(".router.js")) {
-    require(`./routers/${file}`)(app);
-  }
+for (const createRouter of createRouterFunctions) {
+  createRouter(app);
 }
 
-const db = require("./models");
+import db from './models/index.js';
 
-logger.info("Connecting to database...");
+logger.info('Connecting to database...');
 db.sequelize
-  .sync({ alter: true, logging: false })
-  .then(() => {
-    logger.success("Connected to database");
-  })
-  .catch((err) => logger.error(err.message, err));
+    .sync({alter: true, logging: false})
+    .then(() => {
+      logger.success('Connected to database');
+    })
+    .catch((err) => logger.error(err.message, err));
 
-logger.info("Starting Server...");
+logger.info('Starting Server...');
 app.listen(PORT, () => {
   logger.success(`Server is running on port http://${HOST}:${PORT}`);
 });

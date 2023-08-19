@@ -1,5 +1,5 @@
-module.exports = (sequelize, DataTypes) => {
-  return sequelize.define("products", {
+export default (sequelize, DataTypes) => {
+  return sequelize.define('products', {
     productId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -19,7 +19,15 @@ module.exports = (sequelize, DataTypes) => {
         min: 0,
       },
     },
-    productPrice: {
+    productNormalPrice: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: DataTypes.DECIMAL(10, 2).MAX,
+      validate: {
+        min: 0.01,
+      },
+    },
+    productDiscountPrice: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       defaultValue: DataTypes.DECIMAL(10, 2).MAX,

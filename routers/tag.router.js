@@ -1,19 +1,23 @@
-const auth = require("../middleware/authJwt");
-const controller = require("../controllers/tag.controller.js");
-const router = require("express").Router();
+import {
+  verifyToken,
+  checkDuplicateUsernameOrEmail,
+} from '../middleware/auth.middleware.js';
+import controller from '../controllers/tag.controller.js';
+import express from 'express';
+const router = express.Router();
 
-module.exports = (app) => {
+export default (app) => {
   // Create a new Tag
-  router.post("/", [auth.verifyToken], controller.create);
+  router.post('/', [verifyToken], controller.create);
 
   // Retrieve all Tags
-  router.get("/", controller.findAll);
+  router.get('/', controller.findAll);
 
   // Update a Tag with id
-  router.put("/:id", [auth.verifyToken], controller.update);
+  router.put('/:id', [verifyToken], controller.update);
 
-  // Delete a Tag with id
-  router.delete("/:id", [auth.verifyToken], controller.delete);
+  // Destroy a Tag with id
+  router.delete('/:id', [verifyToken], controller.destroy);
 
-  app.use("/tags", router);
+  app.use('/tags', router);
 };

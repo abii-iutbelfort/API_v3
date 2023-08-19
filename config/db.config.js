@@ -1,11 +1,13 @@
-require("dotenv").config();
+import dotenv from 'dotenv';
 
-module.exports = {
+dotenv.config();
+
+export default {
   HOST: process.env._ABII_API_HOST,
   USER: process.env._ABII_API_USER,
   PASSWORD: process.env._ABII_API_MDP,
   DB: process.env._ABII_API_DB,
-  dialect: "postgres",
+  dialect: 'postgres',
   pool: {
     max: 10,
     min: 0,
