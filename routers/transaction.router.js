@@ -2,7 +2,7 @@ import {
   verifyToken,
   checkDuplicateUsernameOrEmail,
 } from '../middleware/auth.middleware.js';
-import controller from '../controllers/".js';
+import controller from '../controllers/transactions.controller.js';
 import express from 'express';
 const router = express.Router();
 
