@@ -2,10 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import createRouterFunctions from './routers/index.js';
+import logger from './utils/logger.utils.js';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+import yaml from 'yaml';
 
 const app = express();
-import logger from './utils/logger.utils.js';
-import path from 'path';
 
 const corsOptions = {
   // origin: "http://localhost:8081",
@@ -32,6 +34,11 @@ app.use(express.urlencoded({ extended: true }));
 for (const createRouter of createRouterFunctions) {
   createRouter(app);
 }
+
+const file = fs.readFileSync('./swagger/doc.yml', 'utf8')
+const swaggerDoc = yaml.parse(file)
+console.log(swaggerDoc)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc, { customSiteTitle: "API Documentation" }));
 
 import db from './models/index.js';
 
