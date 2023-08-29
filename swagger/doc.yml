@@ -35,6 +35,9 @@ components:
         products:
           1: 2
           2: 1
+      required:
+        - clientId
+        - products
 
     SellMembershipRequest:
       type: object
@@ -48,6 +51,9 @@ components:
       example:
         clientId: 1
         membershipId: 1
+      required:
+        - clientId
+        - membershipId
 
     SignupRequest:
       type: object
@@ -60,6 +66,11 @@ components:
           type: string
         password:
           type: string
+      required:
+        - login
+        - firstname
+        - lastname
+        - password
 
     SigninRequest:
       type: object
@@ -68,6 +79,9 @@ components:
           type: string
         password:
           type: string
+      required:
+        - login
+        - password
 
     Transaction:
       type: object
@@ -131,7 +145,12 @@ components:
         productTags:
           type: array
           items:
-            type: string
+            type: number
+      required:
+        - productLibelle
+        - productNormalPrice
+        - productDiscountPrice
+        - productStock
 
     ProductUpdateRequest:
       type: object
@@ -145,7 +164,7 @@ components:
         productTags:
           type: array
           items:
-            type: string
+            type: number
 
     Product:
       type: object
@@ -175,15 +194,21 @@ components:
 
     TagCreateRequest:
       type: object
+      description: Request body for creating a new tag. The tagLibelle must be unique.
       properties:
         tagLibelle:
           type: string
+      required:
+        - tagLibelle
 
     TagUpdateRequest:
       type: object
+      description: Request body for updating a tag. The tagLibelle must be unique.
       properties:
         tagLibelle:
           type: string
+      required:
+        - tagLibelle
 
 paths:
   /auth/signup:
