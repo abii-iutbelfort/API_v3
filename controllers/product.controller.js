@@ -1,10 +1,16 @@
 import db from '../models/index.js';
-const Products = db.Products;
+const { Products, Tags } = db;
 import logger from '../utils/logger.utils.js';
 
 // Create and Save a new Product
 async function create(req, res) {
-  const { productLibelle, productNormalPrice, productStock, productTags } = req.body;
+  const {
+    productLibelle,
+    productDiscountPrice,
+    productNormalPrice,
+    productStock,
+    productTags
+  } = req.body;
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -21,20 +27,25 @@ async function create(req, res) {
     const newProduct = {
       productLibelle,
       productNormalPrice,
+      productDiscountPrice,
       productStock,
     };
 
+    console.log(newProduct);
+
     product = await Products.create(newProduct, { transaction });
 
-    if (productNormalPrice) {
-      await product.update({ productNormalPrice }, { transaction });
-    }
-    if (productStock) {
-      await product.update({ productStock }, { transaction });
-    }
-    if (productTags) {
-      await product.setTags(productTags, { transaction });
-    }
+    const productTagsPromises = productTags.map(async (tag) => {
+      const tagFound = await Tags.findByPk(tag, { transaction });
+      if (tagFound) {
+        await product.addTag(tagFound, { transaction });
+      } else {
+        const newTag = await db.Tags.create({ tagLibelle: tag }, { transaction });
+        await product.addTag(newTag, { transaction });
+      }
+    });
+
+    await Promise.all(productTagsPromises);
 
     await transaction.commit();
     res.status(200).send({

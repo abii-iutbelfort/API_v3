@@ -19,7 +19,7 @@ const PORT = process.env._ABII_API_PORT;
 const HOST = process.env._ABII_API_HOST;
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 // app.use(function (req, res, next) {
 //   res.header(
 //     "Access-Control-Allow-Headers",
@@ -37,11 +37,11 @@ import db from './models/index.js';
 
 logger.info('Connecting to database...');
 db.sequelize
-    .sync({alter: true, logging: false})
-    .then(() => {
-      logger.success('Connected to database');
-    })
-    .catch((err) => logger.error(err.message, err));
+  .sync({ alter: true, logging: false })
+  .then(() => {
+    logger.success('Connected to database');
+  })
+  .catch((err) => logger.error(err.message, err));
 
 logger.info('Starting Server...');
 app.listen(PORT, () => {

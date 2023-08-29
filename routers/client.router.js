@@ -13,6 +13,12 @@ export default (app) => {
   // Retrieve all Clients
   router.get('/', [verifyToken], controller.findAll);
 
+  // Retrieve a Client by its id
+  router.get('/:id', [verifyToken], controller.findByPk);
+
+  // Retrieve a Client by its UUID
+  router.get('/uuid/:uuid', [verifyToken], controller.findByUuid);
+
   // Destroy a Client with id
   router.delete('/:id', [verifyToken], controller.destroy);
 
