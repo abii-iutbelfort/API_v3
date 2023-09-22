@@ -18,5 +18,7 @@ export default (app) => {
 
   router.post("/membership/", [verifyToken], controller.sellMembership);
 
+  router.post("/top_up/", [verifyToken], controller.topUp);
+
   app.use('/transactions', router);
 };

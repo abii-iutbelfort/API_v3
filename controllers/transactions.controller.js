@@ -252,6 +252,68 @@ async function sellMembership(req, res) {
   }
 }
 
+async function topUp(req, res) {
+  const { clientId, transactionPaymentMethod, transactionValue } = req.body;
+
+  if (transactionValue <= 0) {
+    return res.status(400).send({
+      message: 'Montant invalide.',
+    });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    const client = await Clients.findByPk(clientId);
+    if (!client) {
+      logger.warn(`Failed transaction with client id : ${clientId}`);
+      return res.status(404).send({
+        message: 'Client non trouvé.',
+      });
+    }
+
+    await client.update(
+      {
+        clientSolde: client.clientSolde + transactionValue,
+      },
+      { transaction },
+    );
+
+    const newTransaction = await Transactions.create(
+      {
+        clientId,
+        transactionValue: transactionValue,
+        abiiUserId: req.userId,
+        transactionStatus: 'paid',
+      },
+      { transaction },
+    );
+
+    if (transactionPaymentMethod) {
+      await newTransaction.update(
+        {
+          transactionPaymentMethod: transactionPaymentMethod,
+        },
+        { transaction },
+      );
+    }
+
+    await transaction.commit();
+
+    res.status(200).send({
+      message: 'Transaction créée.',
+      data: newTransaction,
+    });
+
+  } catch (error) {
+    logger.error(error.message, error);
+    await transaction.rollback();
+    res.status(500).send({
+      message: 'Le serveur a rencontré une erreur.',
+    });
+  }
+}
+
 // Reverse a Transaction with the specified id
 async function revert(req, res) {
   const { transactionId } = req.params;
@@ -313,4 +375,5 @@ export default {
   sellProducts,
   sellMembership,
   revert,
+  topUp
 };

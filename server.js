@@ -9,15 +9,6 @@ import yaml from 'yaml';
 
 const app = express();
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    callback(null, true)
-  },
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-
 dotenv.config();
 
 const PORT = process.env._ABII_API_PORT;
@@ -26,10 +17,8 @@ const HOST = process.env._ABII_API_HOST;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
-  res.header(
-    "Access-Control-Allow-Headers",
-    "x-access-token, Origin, Content-Type, Accept"
-  );
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 
