@@ -55,6 +55,28 @@ components:
         - clientId
         - membershipId
 
+    TopUpRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+          description: ID of the client
+        transactionValue:
+          type: number
+          description: Amount to top up
+        transactionPaymentMethod:
+          type: string
+          enum: [cash, sumup, paypal]
+          description: Payment method used for the transaction
+          default: cash
+      example:
+        clientId: 1
+        transactionValue: 10.00
+        transactionPaymentMethod: cash
+      required:
+        - clientId
+        - transactionValue
+
     SignupRequest:
       type: object
       properties:
@@ -502,6 +524,68 @@ paths:
                     items:
                       type: string
                   example: ["La carte de membre du client est expirée."]
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Client non trouvé.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions/top_up:
+    /post:
+      summary: Top Up a Client
+      description: Top up a client's account and create a transaction.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopUpRequest"
+      responses:
+        "200":
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transaction créée.
+                  data:
+                    $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid transactionValue.
         "404":
           description: Client not found
           content:
