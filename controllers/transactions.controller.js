@@ -282,7 +282,7 @@ async function topUp(req, res) {
 
     await client.update(
       {
-        clientSolde: client.clientSolde + transactionValue,
+        clientSolde: parseFloat(client.clientSolde) + transactionValue,
       },
       { transaction },
     );
