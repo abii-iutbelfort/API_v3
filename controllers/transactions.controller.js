@@ -253,7 +253,15 @@ async function sellMembership(req, res) {
 }
 
 async function topUp(req, res) {
-  const { clientId, transactionPaymentMethod, transactionValue } = req.body;
+  const { clientId, transactionPaymentMethod } = req.body;
+
+  let transactionValue = req.body.transactionValue;
+  if (!transactionValue) {
+    return res.status(400).send({
+      message: 'Montant invalide.',
+    });
+  }
+  transactionValue = parseFloat(transactionValue);
 
   if (transactionValue <= 0) {
     return res.status(400).send({
@@ -331,6 +339,16 @@ async function revert(req, res) {
       });
     }
 
+    const client = await Clients.findByPk(transactionToRevert.clientId);
+    if (!client) {
+      logger.warn(
+        `Failed revert transaction with client id : ${transactionToRevert.clientId}`,
+      );
+      return res.status(404).send({
+        message: 'Client non trouvé.',
+      });
+    }
+
     await transactionToRevert.products.forEach(async (product) => {
       await product.update(
         {
@@ -340,8 +358,6 @@ async function revert(req, res) {
       );
     });
 
-    // await transaction.setStatut(2);
-    const client = await Clients.findByPk(transactionToRevert.clientId);
     await client.update(
       {
         clientSolde:
