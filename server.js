@@ -23,7 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 app.use(cors({
-  origin: 'http://92.141.153.49:3006',
+  origin: 'http://92.141.153.49',
+  credentials: true,
+  methods: 'GET,PUT,POST,DELETE',
 }));
 
 // Use routes defined in backend/routers
