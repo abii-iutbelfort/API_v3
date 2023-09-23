@@ -23,8 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 app.use(cors({
-  origin: '*',
-  withCredentials: true,
+  origin: 'http://92.141.153.49:5173',
 }));
 
 // Use routes defined in backend/routers
