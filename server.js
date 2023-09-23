@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
   origin: '*',
+  withCredentials: true,
 }));
 
 // Use routes defined in backend/routers
