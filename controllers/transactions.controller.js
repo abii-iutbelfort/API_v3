@@ -5,6 +5,7 @@ import {
   Products,
   ProductSales,
   Memberships,
+  MembershipSales,
   Clients,
 } from '../models/index.js';
 
@@ -57,7 +58,13 @@ async function findByClient(req, res) {
 }
 
 async function sellProducts(req, res) {
-  const { clientId, products } = req.body;
+  const {
+    clientId,
+    products,
+  } = req.body;
+
+  const transactionPaymentMethod = req.body.transactionPaymentMethod || "sumup"
+
   const transaction = await sequelize.transaction();
 
   try {
@@ -120,7 +127,7 @@ async function sellProducts(req, res) {
     const newTransaction = await Transactions.create(
       {
         clientId,
-        transactionValue,
+        transactionValue: -transactionValue,
         abiiUserId: req.userId,
         transactionStatus: 'paid',
       },
@@ -171,6 +178,150 @@ async function sellProducts(req, res) {
   }
 }
 
+async function sellMembership(req, res) {
+  const { clientId, membershipId } = req.body;
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    const client = await Clients.findByPk(clientId);
+    if (!client) {
+      logger.warn(`Failed transaction with client id : ${clientId}`);
+      return res.status(404).send({
+        message: 'Client non trouvé.',
+      });
+    }
+
+    const membership = await Memberships.findByPk(membershipId);
+    if (!membership) {
+      logger.warn(`Failed transaction with membership id : ${membershipId}`);
+      return res.status(404).send({
+        message: 'Abonnement non trouvé.',
+      });
+    }
+
+    if (client.clientSolde < membership.membershipPrice) {
+      logger.warn(`Failed transaction with client id : ${clientId}`);
+      return res.status(400).send({
+        message: 'Solde insuffisant.',
+      });
+    }
+
+    await client.update(
+      {
+        clientSolde: client.clientSolde - membership.membershipPrice,
+        clientMembership: new Date(
+          new Date().setMonth(
+            new Date().getMonth() + membership.membershipDuration,
+          ),
+        ),
+      },
+      { transaction },
+    );
+
+    const newTransaction = await Transactions.create(
+      {
+        clientId,
+        transactionValue: -membership.membershipPrice,
+        abiiUserId: req.userId,
+        transactionStatus: 'paid',
+      },
+      { transaction },
+    );
+
+    await MembershipSales.create(
+      {
+        transactionId: newTransaction.transactionId,
+        membershipId,
+      },
+    )
+
+    await transaction.commit();
+
+    res.status(200).send({
+      message: 'Transaction créée.',
+      data: newTransaction,
+    });
+
+  } catch (error) {
+    logger.error(error.message, error);
+    await transaction.rollback();
+    res.status(500).send({
+      message: 'Le serveur a rencontré une erreur.',
+    });
+  }
+}
+
+async function topUp(req, res) {
+  const { clientId, transactionPaymentMethod } = req.body;
+
+  let transactionValue = req.body.transactionValue;
+  if (!transactionValue) {
+    return res.status(400).send({
+      message: 'Montant invalide.',
+    });
+  }
+  transactionValue = parseFloat(transactionValue);
+
+  if (transactionValue <= 0) {
+    return res.status(400).send({
+      message: 'Montant invalide.',
+    });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    const client = await Clients.findByPk(clientId);
+    if (!client) {
+      logger.warn(`Failed transaction with client id : ${clientId}`);
+      return res.status(404).send({
+        message: 'Client non trouvé.',
+      });
+    }
+
+    await client.update(
+      {
+        clientSolde: parseFloat(client.clientSolde) + transactionValue,
+      },
+      { transaction },
+    );
+
+    const newTransaction = await Transactions.create(
+      {
+        clientId,
+        transactionValue: transactionValue,
+        abiiUserId: req.userId,
+        transactionStatus: 'paid',
+      },
+      { transaction },
+    );
+
+    if (transactionPaymentMethod) {
+      await newTransaction.update(
+        {
+          transactionPaymentMethod: transactionPaymentMethod,
+        },
+        { transaction },
+      );
+    }
+
+    await transaction.commit();
+
+    res.status(200).send({
+      message: 'Transaction créée.',
+      data: newTransaction,
+    });
+
+  } catch (error) {
+    logger.error(error.message, error);
+    await transaction.rollback();
+    res.status(500).send({
+      message: 'Le serveur a rencontré une erreur.',
+    });
+  }
+}
+
 // Reverse a Transaction with the specified id
 async function revert(req, res) {
   const { transactionId } = req.params;
@@ -181,6 +332,23 @@ async function revert(req, res) {
       include: [Products],
     });
 
+    if (!transactionToRevert) {
+      logger.warn(`Failed revert transaction with id : ${transactionId}`);
+      return res.status(404).send({
+        message: 'Transaction non trouvée.',
+      });
+    }
+
+    const client = await Clients.findByPk(transactionToRevert.clientId);
+    if (!client) {
+      logger.warn(
+        `Failed revert transaction with client id : ${transactionToRevert.clientId}`,
+      );
+      return res.status(404).send({
+        message: 'Client non trouvé.',
+      });
+    }
+
     await transactionToRevert.products.forEach(async (product) => {
       await product.update(
         {
@@ -190,12 +358,10 @@ async function revert(req, res) {
       );
     });
 
-    // await transaction.setStatut(2);
-    const client = await Clients.findByPk(transactionToRevert.clientId);
     await client.update(
       {
         clientSolde:
-          parseFloat(client.clientSolde) +
+          parseFloat(client.clientSolde) -
           parseFloat(transactionToRevert.transactionValue),
       },
       { transaction },
@@ -223,5 +389,7 @@ export default {
   findAll,
   findByClient,
   sellProducts,
+  sellMembership,
   revert,
+  topUp
 };

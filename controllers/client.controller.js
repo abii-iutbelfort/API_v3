@@ -20,7 +20,7 @@ async function create(req, res) {
     }
 
     if (req.body.clientSolde) {
-      await client[0].update({clientSolde: req.body.clientSolde});
+      await client[0].update({ clientSolde: req.body.clientSolde });
     }
 
     await t.commit();
@@ -53,13 +53,65 @@ async function findAll(req, res) {
   }
 }
 
+async function findByPk(req, res) {
+  const id = req.params.id;
+
+  try {
+    const client = await Clients.findByPk(id);
+
+    if (client) {
+      res.status(200).send({
+        message: 'Client récupéré.',
+        data: client,
+      });
+    } else {
+      res.status(404).send({
+        message: 'Pas de client correspondant',
+      });
+      logger.warn(`Failed client find with id : ${id}`);
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: 'Le serveur a rencontré une erreur.',
+    });
+    logger.error(error.message, error);
+  }
+}
+
+async function findByUuid(req, res) {
+  const clientUUID = req.params.uuid;
+
+  try {
+    const client = await Clients.findOne({
+      where: { clientUUID },
+    });
+
+    if (client) {
+      res.status(200).send({
+        message: 'Client récupéré.',
+        data: client,
+      });
+    } else {
+      res.status(404).send({
+        message: 'Pas de client correspondant',
+      });
+      logger.warn(`Failed client find with uuid : ${clientUUID}`);
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: 'Le serveur a rencontré une erreur.',
+    });
+    logger.error(error.message, error);
+  }
+}
+
 // Destroy a Client with the specified id in the request
 async function destroy(req, res) {
   const id = req.params.id;
 
   try {
     const destroydCount = await Clients.destroy({
-      where: {clientId: id},
+      where: { clientId: id },
     });
 
     if (destroydCount === 1) {
@@ -83,5 +135,7 @@ async function destroy(req, res) {
 export default {
   create,
   findAll,
+  findByPk,
+  findByUuid,
   destroy,
 };

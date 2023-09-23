@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 
 export default (sequelize, DataTypes) => {
   return sequelize.define(

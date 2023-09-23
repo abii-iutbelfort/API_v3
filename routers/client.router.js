@@ -7,14 +7,22 @@ import express from 'express';
 const router = express.Router();
 
 export default (app) => {
+  router.use([verifyToken])
+
   // Create a new Client
-  router.post('/', [verifyToken], controller.create);
+  router.post('/', controller.create);
 
   // Retrieve all Clients
-  router.get('/', [verifyToken], controller.findAll);
+  router.get('/', controller.findAll);
+
+  // Retrieve a Client by its id
+  router.get('/:id', controller.findByPk);
+
+  // Retrieve a Client by its UUID
+  router.get('/uuid/:uuid', controller.findByUuid);
 
   // Destroy a Client with id
-  router.delete('/:id', [verifyToken], controller.destroy);
+  router.delete('/:id', controller.destroy);
 
   app.use('/clients', router);
 };

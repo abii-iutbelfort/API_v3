@@ -19,9 +19,6 @@ export default (sequelize, DataTypes) => {
     transactionValue: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
-      validate: {
-        min: 0.01,
-      },
     },
     transactionStatus: {
       type: DataTypes.ENUM('paid', 'cancelled', 'pending'),

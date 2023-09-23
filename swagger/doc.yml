@@ -1,0 +1,1250 @@
+openapi: 3.0.0
+info:
+  title: API ABII
+  description: API for ABII
+  version: 0.1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: Le serveur a rencontré une erreur.
+
+    SellProductsRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+          description: ID of the client to whom products will be sold
+        products:
+          type: object
+          description: Object containing product IDs and their quantities
+      example:
+        clientId: 1
+        products:
+          1: 2
+          2: 1
+      required:
+        - clientId
+        - products
+
+    SellMembershipRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+          description: ID of the client to whom the membership will be sold
+        membershipId:
+          type: integer
+          description: ID of the membership to sell
+      example:
+        clientId: 1
+        membershipId: 1
+      required:
+        - clientId
+        - membershipId
+
+    TopUpRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+          description: ID of the client
+        transactionValue:
+          type: number
+          description: Amount to top up
+        transactionPaymentMethod:
+          type: string
+          enum: [cash, sumup, paypal]
+          description: Payment method used for the transaction
+          default: cash
+      example:
+        clientId: 1
+        transactionValue: 10.00
+        transactionPaymentMethod: cash
+      required:
+        - clientId
+        - transactionValue
+
+    SignupRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - firstname
+        - lastname
+        - password
+
+    SigninRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - password
+
+    Transaction:
+      type: object
+      properties:
+        transactionTimestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: 2021-01-01T00:00:00.000Z
+        transactionMembershipPrice:
+          type: boolean
+          description: Indicates if the transaction involves membership price
+          example: true
+        transactionPaymentMethod:
+          type: string
+          enum: [cash, sumup, paypal]
+          description: Payment method used for the transaction
+          example: cash
+        transactionId:
+          type: integer
+          description: ID of the transaction
+          example: 1
+        clientId:
+          type: integer
+          description: ID of the client associated with the transaction
+          example: 1
+        transactionValue:
+          type: string
+          description: Value of the transaction
+          example: -10.00
+        abiiUserId:
+          type: integer
+          description: ID of the user who initiated the transaction
+          example: 1
+        transactionStatus:
+          type: string
+          description: Status of the transaction
+          example: paid
+          enum: [pending, paid, cancelled]
+      example:
+        transactionTimestamp: 2021-01-01T00:00:00.000Z
+        transactionMembershipPrice: true
+        transactionPaymentMethod: cash
+        transactionId: 1
+        clientId: 1
+        transactionValue: -10.00
+        abiiUserId: 1
+        transactionStatus: paid
+
+    ProductCreateRequest:
+      type: object
+      properties:
+        productLibelle:
+          type: string
+        productDiscountPrice:
+          type: number
+        productNormalPrice:
+          type: number
+        productStock:
+          type: number
+        productTags:
+          type: array
+          items:
+            type: number
+      required:
+        - productLibelle
+        - productNormalPrice
+        - productDiscountPrice
+        - productStock
+
+    ProductUpdateRequest:
+      type: object
+      properties:
+        productLibelle:
+          type: string
+        productNormalPrice:
+          type: number
+        productStock:
+          type: number
+        productTags:
+          type: array
+          items:
+            type: number
+
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+        productLibelle:
+          type: string
+        productDiscountPrice:
+          type: number
+        productNormalPrice:
+          type: number
+        productStock:
+          type: number
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+
+    Tag:
+      type: object
+      properties:
+        tagId:
+          type: integer
+        tagLibelle:
+          type: string
+
+    TagCreateRequest:
+      type: object
+      description: Request body for creating a new tag. The tagLibelle must be unique.
+      properties:
+        tagLibelle:
+          type: string
+      required:
+        - tagLibelle
+
+    TagUpdateRequest:
+      type: object
+      description: Request body for updating a tag. The tagLibelle must be unique.
+      properties:
+        tagLibelle:
+          type: string
+      required:
+        - tagLibelle
+
+paths:
+  /auth/signup:
+    post:
+      summary: User Sign Up
+      description: Create a new user account.
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "200":
+          description: User account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: User ABII créé.
+                  data:
+                    type: object
+                    properties:
+                      firstname:
+                        type: string
+                      lastname:
+                        type: string
+                      login:
+                        type: string
+                    example:
+                      firstname: John
+                      lastname: Doe
+                      login: john.doe
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /auth/signin:
+    post:
+      summary: User Sign In
+      description: Authenticate a user and generate an access token.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Connexion réussie.
+                  data:
+                    type: object
+                    properties:
+                      userData:
+                        type: object
+                        properties:
+                          firstname:
+                            type: string
+                          lastname:
+                            type: string
+                          login:
+                            type: string
+                      accessToken:
+                        type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Mot de passe invalide.
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas d'utilisateur ABII correspondant.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions:
+    get:
+      summary: Get all transactions
+      description: Retrieve a list of all transactions.
+      tags:
+        - Transactions
+      responses:
+        "200":
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transactions récupérés.
+                  data:
+                    type: array
+                    description: List of transactions
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /transactions/client/{userId}:
+    get:
+      summary: Retrieve Transactions of a User
+      description: Retrieve all transactions of a specific user (client).
+      tags:
+        - Transactions
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: ID of the user (client)
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transactions récupérés.
+                  data:
+                    type: array
+                    description: List of transactions
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions/{transactionId}:
+    delete:
+      summary: Revert a Transaction
+      description: Revert a transaction with the specified ID.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: ID of the transaction to revert
+          schema:
+            type: integer
+            example: 123
+      responses:
+        "200":
+          description: Transaction reverted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transaction annulée.
+        "404":
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Transaction non trouvée.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions/products:
+    post:
+      summary: Sell Products
+      description: Sell products to a client and create a transaction.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SellProductsRequest"
+      responses:
+        "200":
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transaction créée.
+                  data:
+                    $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Solde insuffisant.
+                  infos:
+                    type: array
+                    items:
+                      type: string
+                  example: ["La carte de membre du client est expirée."]
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Client non trouvé.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions/top_up:
+    /post:
+      summary: Top Up a Client
+      description: Top up a client's account and create a transaction.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopUpRequest"
+      responses:
+        "200":
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transaction créée.
+                  data:
+                    $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid transactionValue.
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Client non trouvé.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /transactions/membership:
+    post:
+      summary: Sell Membership
+      description: Sell a membership to a client and create a transaction.
+      tags:
+        - Transactions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SellMembershipRequest"
+      responses:
+        "200":
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Transaction créée.
+                  data:
+                    $ref: "#/components/schemas/Transaction"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Solde insuffisant.
+        "404":
+          description: Client or Membership not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Client non trouvé.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /clients:
+    post:
+      summary: Create a new Client
+      description: Create and save a new client.
+      tags:
+        - Clients
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientCreateRequest"
+      responses:
+        "200":
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Client créé.
+                  data:
+                    $ref: "#/components/schemas/Client"
+        "409":
+          description: Client already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Ce client existe déjà.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    get:
+      summary: Retrieve all Clients
+      description: Retrieve all clients from the database.
+      tags:
+        - Clients
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Clients retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Clients récupérés.
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Client"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /clients/{id}:
+    get:
+      summary: Retrieve a Client by its id
+      description: Retrieve a client by its id.
+      tags:
+        - Clients
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the client to retrieve
+      responses:
+        "200":
+          description: Client retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Client récupéré.
+                  data:
+                    $ref: "#/components/schemas/Client"
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de client correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    delete:
+      summary: Destroy a Client
+      description: Destroy a client with the specified id.
+      tags:
+        - Clients
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the client to destroy
+      responses:
+        "200":
+          description: Client destroyed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Client a bien été supprimé.
+        "404":
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de client correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /clients/uuid/{uuid}:
+    get:
+      summary: Retrieve a Client by its UUID
+      description: Retrieve a client by its UUID.
+      tags:
+        - Clients
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            /clients:
+
+  /products:
+    post:
+      summary: Create a new Product
+      description: Create and save a new product.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreateRequest"
+      responses:
+        "200":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Product créé.
+                  data:
+                    $ref: "#/components/schemas/Product"
+        "409":
+          description: Product already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Ce produit existe déjà.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    get:
+      summary: Retrieve all Products
+      description: Retrieve all products from the database.
+      tags:
+        - Products
+      responses:
+        "200":
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Produits récupérés.
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /products/{id}:
+    put:
+      summary: Update a Product
+      description: Update a product with the specified id.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdateRequest"
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Produit mis à jour.
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de produit correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    delete:
+      summary: Destroy a Product
+      description: Destroy a product with the specified id.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product to destroy
+      responses:
+        "200":
+          description: Product destroyed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Produit a bien été supprimé.
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de produit correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /tags:
+    post:
+      summary: Create a new Tag
+      description: Create and save a new tag.
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagCreateRequest"
+      responses:
+        "200":
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Tag créé.
+                  data:
+                    $ref: "#/components/schemas/Tag"
+        "409":
+          description: Tag already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Ce tag existe déjà.
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    get:
+      summary: Retrieve all Tags
+      description: Retrieve all tags from the database.
+      tags:
+        - Tags
+      responses:
+        "200":
+          description: Tags retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Tags récupérés.
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tag"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+
+  /tags/{id}:
+    put:
+      summary: Update a Tag
+      description: Update a tag with the specified id.
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the tag to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagUpdateRequest"
+      responses:
+        "200":
+          description: Tag updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Tag mis à jour.
+        "404":
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de tag correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
+    delete:
+      summary: Destroy a Tag
+      description: Destroy a tag with the specified id.
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the tag to destroy
+      responses:
+        "200":
+          description: Tag destroyed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: Tag a bien été supprimé.
+        "404":
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Pas de tag correspondant
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Le serveur a rencontré une erreur.
