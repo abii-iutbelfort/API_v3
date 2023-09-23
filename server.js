@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 app.use(cors({
-  origin: 'http://92.141.153.49:80',
+  origin: 'http://92.141.153.49:8080',
 }));
 
 // Use routes defined in backend/routers
