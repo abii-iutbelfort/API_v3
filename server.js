@@ -12,7 +12,6 @@ const app = express();
 dotenv.config();
 
 const PORT = process.env._ABII_API_PORT;
-const HOST = process.env._ABII_API_HOST;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +24,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: 'http://92.141.153.49',
   credentials: true,
-  methods: 'GET,PUT,POST,DELETE',
 }));
 
 // Use routes defined in backend/routers
@@ -35,7 +33,7 @@ for (const createRouter of createRouterFunctions) {
 
 const file = fs.readFileSync('./swagger/doc.yml', 'utf8')
 const swaggerDoc = yaml.parse(file)
-console.log(swaggerDoc)
+// console.log(swaggerDoc)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc, { customSiteTitle: "API Documentation" }));
 
 import db from './models/index.js';
@@ -50,5 +48,5 @@ db.sequelize
 
 logger.info('Starting Server...');
 app.listen(PORT, () => {
-  logger.success(`Server is running on port http://${HOST}:${PORT}`);
+  logger.success(`Server is running on port ${PORT}`);
 });

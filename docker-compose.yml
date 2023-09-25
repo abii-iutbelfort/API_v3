@@ -1,0 +1,45 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    container_name: db
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${_ABII_API_MDP}
+      POSTGRES_DB: ${_ABII_API_DB}
+      POSTGRES_USER: ${_ABII_API_USER}
+    env_file:
+      - .env
+    
+  api:
+    container_name: api
+    depends_on:
+      - db
+    build: .
+    restart: always
+    ports:
+      - 3006:3006
+    env_file:
+      - .env
+    environment:
+      _ABII_API_HOST: db
+  
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+
+networks:
+  default:
+    name: api-network
