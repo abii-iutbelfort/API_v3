@@ -280,9 +280,11 @@ async function topUp(req, res) {
       });
     }
 
+    const newSolde = parseFloat(client.clientSolde) + transactionValue
+
     await client.update(
       {
-        clientSolde: parseFloat(client.clientSolde) + transactionValue,
+        clientSolde: newSolde,
       },
       { transaction },
     );
@@ -310,7 +312,7 @@ async function topUp(req, res) {
 
     res.status(200).send({
       message: 'Transaction créée.',
-      data: newTransaction,
+      data: { ...newTransaction, clientSolde: newSolde },
     });
 
   } catch (error) {
