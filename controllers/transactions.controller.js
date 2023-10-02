@@ -312,7 +312,7 @@ async function topUp(req, res) {
 
     res.status(200).send({
       message: 'Transaction créée.',
-      data: { ...newTransaction, clientSolde: newSolde },
+      data: { ...newTransaction, client },
     });
 
   } catch (error) {
